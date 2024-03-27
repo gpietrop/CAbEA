@@ -1,0 +1,68 @@
+ea.experiment(
+  runs =
+    (randomGenerator = (seed = [1:1:30]) * [ea.rg.defaultRG()]) *
+    (solver = (nEval = [50000]) *
+    (representation = [ea.r.intString()]) * [
+      ea.s.cabea(name = "cabea-e-11"; crossoverP = 0.33; substrate = empty; gridSize = 11);
+      ea.s.cabea(name = "cabea-cc-11"; crossoverP = 0.33; substrate = contour_cross; gridSize = 11);
+      ea.s.cabea(name = "cabea-s-11"; crossoverP = 0.33; substrate = v_serpentine; gridSize = 11);
+      ea.s.cabea(name = "cabea-ttt-11"; crossoverP = 0.33; substrate = tic_tac_toe; gridSize = 11)
+    ]) * (problem = [
+      ea.p.s.multiModalIntOneMax(nOfTargets = 2; p = 100);
+      ea.p.s.multiModalIntOneMax(nOfTargets = 3; p = 100);
+      ea.p.s.multiModalIntOneMax(nOfTargets = 5; p = 100);
+      ea.p.s.multiModalIntOneMax(nOfTargets = 8; p = 100)
+    ]) * [
+    ea.run()
+  ];
+  listeners = [
+    ea.l.console(
+      functions = [
+        ea.nf.size(f = ea.nf.genotype(individual = ea.nf.best()); s = "%3d");
+        ea.nf.bestFitness(s = "%5.3f");
+        ea.nf.overallTargetDistance();
+        ea.nf.solution(individual = ea.nf.best(); s = "%40.40s")
+      ];
+      runKeys = [
+        ea.misc.sEntry(key = "solver"; value = "{solver.name}");
+        ea.misc.sEntry(key = "problem"; value = "{problem.name}");
+        ea.misc.sEntry(key = "seed"; value = "{randomGenerator.seed}")
+      ];
+      onlyLast = true
+    );
+    ea.l.expPlotSaver(
+      filePath = "results/substrates/mm-d-100-substrates-fitness-vs-evals.png";
+      w = 600; h = 1200;
+      saveCsvDataMode = paper_friendly;
+      type = lines;
+      plot = ea.plot.fitnessPlotMatrix(xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f"))
+    );
+    ea.l.expPlotSaver(
+      filePath = "results/substrates/mm-d-100-substrates-fitness-boxplot.png";
+      w = 600; h = 1200;
+      saveCsvDataMode = paper_friendly;
+      type = boxplot;
+      plot = ea.plot.fitnessBoxplotMatrix()
+    );
+    ea.l.expPlotSaver(
+      filePath = "results/substrates/mm-d-100-substrates-otd-vs-evals.png";
+      w = 600; h = 1200;
+      type = lines;
+      saveCsvDataMode = paper_friendly;
+      plot = ea.plot.fitnessPlotMatrix(
+        xFunction = ea.nf.quantized(f = ea.nf.evals(); r = 250; s = "%.0f");
+        yFunction = ea.nf.overallTargetDistance()
+      )
+    );
+    ea.l.expPlotSaver(
+      filePath = "results/substrates/mm-d-100-substrates-otd-boxplot.png";
+      w = 600; h = 1200;
+      freeScales = true;
+      type = boxplot;
+      saveCsvDataMode = paper_friendly;
+      plot = ea.plot.fitnessBoxplotMatrix(
+        yFunction = ea.nf.overallTargetDistance()
+      )
+    )
+  ]
+)
